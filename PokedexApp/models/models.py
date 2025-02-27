@@ -25,7 +25,7 @@ class Pokemon(BaseModel):
 
 
 class Type(BaseModel):
-    id: Optional[ObjectId] = Field(alias="_id")
+    id: Optional[str | ObjectId] = Field(alias="_id")
     name: str = Field(nullable=False, description="The name of the type")
 
     model_config = {
