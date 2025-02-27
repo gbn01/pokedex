@@ -1,6 +1,6 @@
 from bson import ObjectId
 from ..config.database import get_database
-from ..models.models import Pokemon, Type
+from ..models.models import Type
 from fastapi import APIRouter, Body, Depends, HTTPException, Path
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -9,7 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 router = APIRouter()
 
 class TypeRequest(BaseModel):
-    name: str
+    name: str = Field(..., description="The name of the type", max_length=20, min_length=3)
 
 @router.get("", response_model=list[Type])
 async def get_types(db: AsyncIOMotorDatabase = Depends(get_database)):
