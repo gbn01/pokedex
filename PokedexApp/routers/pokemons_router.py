@@ -6,6 +6,3 @@ from pydantic.fields import Field
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 router = APIRouter()
-
-class TypeRequest(BaseModel):
-    name: str

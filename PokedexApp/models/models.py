@@ -19,9 +19,16 @@ from bson import ObjectId
 #         field_schema.update(type="string")
 
 class Pokemon(BaseModel):
+    id: Optional[str | ObjectId] = Field(alias="_id")
     name: str
     type: str
     abilities: list[str]
+
+    model_config = {
+        "json_encoders": {ObjectId: str},
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True
+    }
 
 
 class Type(BaseModel):
@@ -35,9 +42,17 @@ class Type(BaseModel):
     }
 
 class Ability(BaseModel):
+    id: Optional[str | ObjectId] = Field(alias="_id")
     name: str
     description: str
     power: int
     accuracy: int
+    type: str
     category: str
     pp: int
+
+    model_config = {
+        "json_encoders": {ObjectId: str},
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True
+    }
