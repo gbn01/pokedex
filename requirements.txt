@@ -1,5 +1,5 @@
 fastapi
 uvicorn
-pymongo
 httpx
+pytest
 motor
