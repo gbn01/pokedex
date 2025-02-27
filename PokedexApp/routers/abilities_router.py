@@ -1,9 +1,7 @@
-from bson import ObjectId
 from ..config.database import get_database
 from ..models.models import Ability, Type
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from pydantic.fields import Field
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
 router = APIRouter()
