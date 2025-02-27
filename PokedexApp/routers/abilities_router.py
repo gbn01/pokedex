@@ -38,10 +38,11 @@ async def get_abilities(db: AsyncIOMotorDatabase = Depends(get_database)):
     abilities = await db.abilities.find({}).to_list(length=100)
     return abilities
 
-@router.post("", status_code=201)
+@router.post("", status_code=200, response_model=Ability)
 async def create_ability(ability: AbilityRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
     result = await db.abilities.insert_one(ability.model_dump())
-    return Ability.model_construct(result)
+    print(result)
+    return await db.abilities.find_one({"_id": result.inserted_id})
 
 @router.get("/{ability_id}", response_model=Ability)
 async def get_ability(ability_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
@@ -51,7 +52,8 @@ async def get_ability(ability_id: str, db: AsyncIOMotorDatabase = Depends(get_da
 @router.put("/{ability_id}", response_model=Ability)
 async def update_ability(ability_id: str, ability: AbilityRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
     result = await db.abilities.update_one({"_id": ObjectId(ability_id)}, {"$set": ability.model_dump()})
-    return result.upserted_id
+    print(result)
+    return await db.abilities.find_one({"_id": ObjectId(ability_id)})
 
 @router.delete("/{ability_id}", status_code=204)
 async def delete_ability(ability_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
