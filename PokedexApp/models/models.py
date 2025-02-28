@@ -8,7 +8,7 @@ class Pokemon(BaseModel):
     name: str
     type: str
     abilities: list[str]
-
+    weaknesses: list[str]
 
 class Type(BaseModel):
     id: str = Field(alias="_id")

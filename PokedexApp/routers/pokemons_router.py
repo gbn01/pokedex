@@ -1,8 +1,45 @@
+from typing import List
+from ..models.models import Pokemon
+from fastapi import APIRouter, HTTPException
+from ..services.pokemons_service import PokemonsService
+from fastapi import Depends
 from ..config.database import get_database
-from ..models.models import Pokemon, Ability, Type
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from pydantic.fields import Field
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from ..dtos.pokemons_dtos import *
 
 router = APIRouter()
+
+@router.get("/pokemons", response_model=List[PokemonResponseDTO])
+async def get_pokemons(db: AsyncIOMotorDatabase = Depends(get_database)):
+    pokemons = await PokemonsService.get_pokemons(db)
+    print(pokemons)
+    return pokemons 
+
+@router.get("/pokemons/{pokemon_id}", response_model=PokemonResponseDTO)
+async def get_pokemon(pokemon_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+    pokemon = await PokemonsService.get_pokemon(pokemon_id, db)
+    return pokemon
+
+@router.post("/pokemons", response_model=PokemonResponseDTO)
+async def create_pokemon(pokemon: PokemonRegisterDto, db: AsyncIOMotorDatabase = Depends(get_database)):
+    pokemon = await PokemonsService.create_pokemon(pokemon, db)
+    return pokemon
+
+@router.put("/pokemons/{pokemon_id}", response_model=PokemonResponseDTO)
+async def update_pokemon(pokemon_id: str, pokemon: PokemonRegisterDto, db: AsyncIOMotorDatabase = Depends(get_database)):
+    pokemon = await PokemonsService.update_pokemon(pokemon_id, pokemon, db)
+    return pokemon
+
+@router.delete("/pokemons/{pokemon_id}", status_code=204)
+async def delete_pokemon(pokemon_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+    await PokemonsService.delete_pokemon(pokemon_id, db)
+
+
+
+
+
+
+
+
+
+
