@@ -1,0 +1,32 @@
+services:
+  pokedex:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - pokedex-network
+
+  db:
+    image: mongo:latest
+    env_file:
+      - .env
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pokedex-network
+
+volumes:
+  mongo_data:
+
+networks:
+  pokedex-network:
+    driver: bridge
