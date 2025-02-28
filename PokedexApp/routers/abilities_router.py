@@ -1,98 +1,33 @@
+from ..services.abilities_service import AbilitiesService
+from ..dtos.abilities_dtos import *
 from ..config.database import get_database
-from ..models.models import Ability, Type
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase
-import uuid
+
 router = APIRouter()
 
-class AbilityRequest(BaseModel):
-    name: str
-    description: str
-    power: int
-    accuracy: int
-    type: str
-    category: str
-    pp: int
+abilities_service = AbilitiesService()
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "name": "Fire Punch",
-                    "description": "A fire punch that deals damage and has a chance to burn the opponent.",
-                    "power": 75,
-                    "accuracy": 100,
-                    "type": "Fire",
-                    "category": "Physical",
-                    "pp": 15
-                }
-            ]
-        },
-    }
-
-class AbilityResponse(Ability):
-    name: str
-    description: str
-    power: int
-    accuracy: int
-    type: Type
-    category: str
-    pp: int
-
-@router.get("", response_model=list[AbilityResponse])
+@router.get("", response_model=list[AbilityResponseDTO])
 async def get_abilities(db: AsyncIOMotorDatabase = Depends(get_database)):
-    abilities = await db.abilities.aggregate([{
-        "$lookup": {
-            "from": "types",
-            "localField": "type",
-            "foreignField": "_id",
-            "as": "type"
-        }
-    },
-    {
-        "$unwind": "$type"
-    }]).to_list(length=100)
-
+    abilities = await abilities_service.get_abilities(db)
     return abilities
 
-@router.post("", status_code=200, response_model=Ability)
-async def create_ability(ability: AbilityRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
-    abilityDoc = ability.model_dump()
-    abilityDoc["_id"] = str(uuid.uuid4())
-    result = await db.abilities.insert_one(abilityDoc)
-    return await db.abilities.find_one({"_id": result.inserted_id})
+@router.post("", status_code=200, response_model=AbilityResponseDTO)
+async def create_ability(ability: AbilityRegisterDto, db: AsyncIOMotorDatabase = Depends(get_database)):
+    ability = await abilities_service.create_ability(ability, db)
+    return ability
 
-@router.get("/{ability_id}", response_model=AbilityResponse)
+@router.get("/{ability_id}", response_model=AbilityResponseDTO)
 async def get_ability(ability_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
-    ability = await db.abilities.aggregate([{
-        "$match": {"_id": ability_id}
-    },
-    {
-        "$lookup": {
-            "from": "types",
-            "localField": "type",
-            "foreignField": "_id",
-            "as": "type"
-        }
-    },
-    {
-        "$unwind": "$type"
-    }]).to_list(length=1)
-    print(ability)
-    if len(ability) == 0:
-        raise HTTPException(status_code=404, detail="Ability not found")
-    return ability[0]
+    ability = await abilities_service.get_ability(ability_id, db)
+    return ability
 
-@router.put("/{ability_id}", response_model=Ability)
-async def update_ability(ability_id: str, ability: AbilityRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
-    result = await db.abilities.update_one({"_id": ability_id}, {"$set": ability.model_dump()})
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Ability not found")
-    return await db.abilities.find_one({"_id": ability_id})
+@router.put("/{ability_id}", response_model=AbilityResponseDTO)
+async def update_ability(ability_id: str, ability: AbilityRegisterDto, db: AsyncIOMotorDatabase = Depends(get_database)):
+    ability = await abilities_service.update_ability(ability_id, ability, db)
+    return ability
 
 @router.delete("/{ability_id}", status_code=204)
 async def delete_ability(ability_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
-    result = await db.abilities.delete_one({"_id": ability_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Ability not found")
+    await abilities_service.delete_ability(ability_id, db)

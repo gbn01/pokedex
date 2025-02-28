@@ -2,51 +2,29 @@ import uuid
 from ..config.database import get_database
 from ..models.models import Type
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from pydantic.fields import Field
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
+from ..dtos.types_dtos import *
+from ..services.types_service import TypesService
 router = APIRouter()
 
-class TypeRequest(BaseModel):
-    name: str = Field(..., description="The name of the type", max_length=20, min_length=3)
+types_service = TypesService()
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"name": "Fire"},
-            ]
-        }
-    }
-
-@router.get("", response_model=list[Type])
+@router.get("", response_model=list[TypeResponseDTO])
 async def get_types(db: AsyncIOMotorDatabase = Depends(get_database)):
-    types = await db.types.find({}).to_list(length=100)
-    return types
+    return await types_service.get_types(db)
 
-@router.post("", status_code=200, response_model=Type)
-async def create_type(type: TypeRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
-    typeDoc = type.model_dump()
-    typeDoc["_id"] = str(uuid.uuid4())
-    result = await db.types.insert_one(typeDoc)
-    return await db.types.find_one({"_id": result.inserted_id})
+@router.post("", status_code=200, response_model=TypeResponseDTO)
+async def create_type(type: TypeRegisterDTO, db: AsyncIOMotorDatabase = Depends(get_database)):
+    return await types_service.create_type(type, db)
 
-@router.get("/{type_id}", response_model=Type)
+@router.get("/{type_id}", response_model=TypeResponseDTO)
 async def get_type(type_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
-    type = await db.types.find_one({"_id": type_id})
-    if not type:
-        raise HTTPException(status_code=404, detail="Type not found")
-    return type
+    return await types_service.get_type_by_id(type_id, db)
 
-@router.put("/{type_id}", response_model=Type)
-async def update_type(type_id: str, type: TypeRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
-    result = await db.types.update_one({"_id": type_id}, {"$set": type.model_dump()})
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Type not found")
-    return await db.types.find_one({"_id": type_id})
+@router.put("/{type_id}", response_model=TypeResponseDTO)
+async def update_type(type_id: str, type: TypeRegisterDTO, db: AsyncIOMotorDatabase = Depends(get_database)):
+    return await types_service.update_type(type_id, type, db)
 
 @router.delete("/{type_id}", status_code=204)
 async def delete_type(type_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
-    result = await db.types.delete_one({"_id": type_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Type not found")
+    return await types_service.delete_type(type_id, db)
