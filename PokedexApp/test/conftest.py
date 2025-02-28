@@ -32,5 +32,5 @@ def fake_abilities_service():
 
 
 @pytest.fixture
-def client():
+def test_client():
     return TestClient(app)

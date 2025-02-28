@@ -13,6 +13,14 @@ mocked_pokemons = [
                 "id": "1",
                 "name": "Static",
                 "description": "This Pokemon cannot be paralyzed.",
+                "power": 0,
+                "accuracy": 100,
+                "type": {
+                    "id": "1",
+                    "name": "Electric",
+                },
+                "category": "Special",
+                "pp": 20
             }
         ],
         "weaknesses": [
