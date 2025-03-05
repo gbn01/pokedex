@@ -1,4 +1,3 @@
-from fastapi.testclient import TestClient
 import pytest
 from ..mocks.mocks import mocked_pokemons, mocked_create_pokemon_request, get_mocked_pokemons
 from ...main import app
