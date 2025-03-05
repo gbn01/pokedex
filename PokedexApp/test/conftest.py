@@ -25,6 +25,10 @@ def fake_types_service():
 def fake_abilities_service():
     return mock_abilities_service
 
+@pytest.fixture
+def fake_db():
+    return mock_db
+
 def get_mock_database():
     yield mock_db
 

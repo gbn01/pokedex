@@ -1,5 +1,5 @@
 import pytest
-from ..mocks.mocks import mocked_abilities, mocked_create_ability_request, get_mocked_abilities
+from ..mocks.mocks import mocked_abilities, mocked_create_ability_request, get_mocked_abilities, get_first_mocked_ability
 from ...main import app
 
 @pytest.mark.asyncio
@@ -12,26 +12,26 @@ async def test_get_abilities(test_client, fake_abilities_service):
 
 @pytest.mark.asyncio
 async def test_get_ability_by_id(test_client, fake_abilities_service):
-    fake_abilities_service.get_ability_by_id.return_value = mocked_abilities[0]
+    fake_abilities_service.get_ability_by_id.return_value = get_first_mocked_ability()
     response = test_client.get("/abilities/1")
     assert response.status_code == 200
-    assert response.json() == mocked_abilities[0]
-    assert fake_abilities_service.get_ability_by_id.call_count == 1
+    assert response.json() == get_first_mocked_ability()
+    assert fake_abilities_service.get_ability_by_id.call_count == 1 
 
 @pytest.mark.asyncio
 async def test_create_ability(test_client, fake_abilities_service):
-    fake_abilities_service.create_ability.return_value = mocked_abilities[0]
+    fake_abilities_service.create_ability.return_value = get_first_mocked_ability()
     response = test_client.post("/abilities", json=mocked_create_ability_request)
     assert response.status_code == 200
-    assert response.json() == mocked_abilities[0]
+    assert response.json() == get_first_mocked_ability()
     assert fake_abilities_service.create_ability.call_count == 1
 
 @pytest.mark.asyncio
 async def test_update_ability(test_client, fake_abilities_service):
-    fake_abilities_service.update_ability.return_value = mocked_abilities[0]
+    fake_abilities_service.update_ability.return_value = get_first_mocked_ability()
     response = test_client.put("/abilities/1", json=mocked_create_ability_request)
     assert response.status_code == 200
-    assert response.json() == mocked_abilities[0]
+    assert response.json() == get_first_mocked_ability()
     assert fake_abilities_service.update_ability.call_count == 1
 
 @pytest.mark.asyncio
