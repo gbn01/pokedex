@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated, List
 from ..models.models import Pokemon
 from fastapi import APIRouter, HTTPException
 from ..services.pokemons_service import PokemonsService
@@ -9,33 +9,37 @@ from ..dtos.pokemons_dtos import *
 
 router = APIRouter()
 
-pokemons_service = PokemonsService()
 
-@router.get("", response_model=List[PokemonResponseDTO])
-async def get_pokemons(db: AsyncIOMotorDatabase = Depends(get_database)):
-    pokemons = await pokemons_service.get_pokemons(db)
-    print(pokemons)
-    return pokemons 
+service_dependency = Annotated[PokemonsService, Depends(PokemonsService)]
+db_dependency = Annotated[AsyncIOMotorDatabase, Depends(get_database)]
+
+@router.get("", response_model=list[PokemonResponseDTO])
+async def get_pokemons(service: service_dependency, db: db_dependency):
+    pokemons = await service.get_pokemons(db)
+    return pokemons
 
 @router.get("/{pokemon_id}", response_model=PokemonResponseDTO)
-async def get_pokemon(pokemon_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
-    pokemon = await pokemons_service.get_pokemon(pokemon_id, db)
+async def get_pokemon(pokemon_id: str, service: service_dependency, db: db_dependency):
+    pokemon = await service.get_pokemon(pokemon_id, db)
     return pokemon
 
 @router.post("", status_code=201, response_model=PokemonResponseDTO)
-async def create_pokemon(pokemon: PokemonRegisterDto, db: AsyncIOMotorDatabase = Depends(get_database)):
-    pokemon = await pokemons_service.create_pokemon(pokemon, db)
+async def create_pokemon(pokemon: PokemonRegisterDto, service: service_dependency, db: db_dependency):
+    pokemon = await service.create_pokemon(pokemon, db)
     return pokemon
 
 @router.put("/{pokemon_id}", response_model=PokemonResponseDTO)
-async def update_pokemon(pokemon_id: str, pokemon: PokemonRegisterDto, db: AsyncIOMotorDatabase = Depends(get_database)):
-    pokemon = await pokemons_service.update_pokemon(pokemon_id, pokemon, db)
+async def update_pokemon(pokemon_id: str, pokemon: PokemonRegisterDto, service: service_dependency, db: db_dependency):
+    pokemon = await service.update_pokemon(pokemon_id, pokemon, db)
     return pokemon
 
 @router.delete("/{pokemon_id}", status_code=204)
-async def delete_pokemon(pokemon_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
-    await pokemons_service.delete_pokemon(pokemon_id, db)
+async def delete_pokemon(pokemon_id: str, service: service_dependency, db: db_dependency):
+    await service.delete_pokemon(pokemon_id, db)
 
+@router.delete("", status_code=204)
+async def delete_all_pokemons(service: service_dependency, db: db_dependency):
+    await service.delete_all_pokemons(db)
 
 
 

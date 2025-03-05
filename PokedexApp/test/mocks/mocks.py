@@ -2,21 +2,21 @@ import pytest
 
 mocked_pokemons = [
     {
-        "id": "1",
+        "_id": "1",
         "name": "Pikachu",
         "type": {
-            "id": "1",
+            "_id": "1",
             "name": "Electric",
         },
         "abilities": [
             {
-                "id": "1",
+                "_id": "1",
                 "name": "Static",
                 "description": "This Pokemon cannot be paralyzed.",
                 "power": 0,
                 "accuracy": 100,
                 "type": {
-                    "id": "1",
+                    "_id": "1",
                     "name": "Electric",
                 },
                 "category": "Special",
@@ -25,12 +25,15 @@ mocked_pokemons = [
         ],
         "weaknesses": [
             {
-                "id": "2",
+                "_id": "2",
                 "name": "Ground",
             }
         ],
     }
 ]
+
+def get_mocked_pokemons():
+    return mocked_pokemons
 
 mocked_create_pokemon_request = {
     "name": "Pikachu",

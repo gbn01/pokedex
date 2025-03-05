@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 
+from .abilities_dtos import AbilityResponseDTO
+from .types_dtos import TypeResponseDTO
+
 from ..models.models import Ability, Pokemon, Type
 
 
@@ -18,16 +21,17 @@ class PokemonRegisterDto(BaseModel):
     }
 
 class PokemonResponseDTO(Pokemon):
-    id: str = Field(..., description="The id of the pokemon", alias="_id")
+    id: str = Field(..., description="The id of the pokemon", alias="_id", name="id")
     name: str = Field(..., description="The name of the pokemon")
-    type: Type = Field(..., description="The type of the pokemon")
-    abilities: list[Ability] = Field(..., description="The abilities of the pokemon")
-    weaknesses: list[Type] = Field(..., description="The weaknesses of the pokemon")
+    type: TypeResponseDTO = Field(..., description="The type of the pokemon")
+    abilities: list[AbilityResponseDTO] = Field(..., description="The abilities of the pokemon")
+    weaknesses: list[TypeResponseDTO] = Field(..., description="The weaknesses of the pokemon")
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {"id": "1", "name": "Pikachu", "type": "Electric", "abilities": [{"id": "2", "name": "Static"}], "weaknesses": [{"id": "3", "name": "Ground"}]}
             ]
-        }
+        },
+        "populate_by_name": True,
     }

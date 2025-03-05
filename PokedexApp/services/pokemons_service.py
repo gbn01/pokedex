@@ -9,59 +9,125 @@ from ..models.models import Pokemon
 from ..config.database import get_database
 
 
+
 class PokemonsService:
 
     async def get_pokemon_by_id(self, pokemon_id: str, db: AsyncIOMotorDatabase) -> PokemonResponseDTO:
-        pokemon = await db.pokemons.aggregate([{
-            "$match": {"_id": pokemon_id}
-        }, {
-            "$lookup": {
-                "from": "abilities",
-                "localField": "abilities",
-                "foreignField": "_id",
-                "as": "abilities"
+        pokemon = await db.pokemons.aggregate([
+            {
+                "$match": {
+                    "_id": pokemon_id
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "abilities",
+                    "localField": "abilities",
+                    "foreignField": "_id",
+                    "as": "abilities"
+                }
+            },
+            {
+                "$unwind": "$abilities"
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "abilities.type",
+                    "foreignField": "_id",
+                    "as": "abilities.type"
+                }
+            },
+            {
+                "$unwind": "$abilities.type"
+            },
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "name": {"$first": "$name"},
+                    "type": {"$first": "$type"},
+                    "weaknesses": {"$first": "$weaknesses"},
+                    "abilities": {"$push": "$abilities"}
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "weaknesses",
+                    "foreignField": "_id",
+                    "as": "weaknesses"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "type",
+                    "foreignField": "_id",
+                    "as": "type"
+                }
+            },
+            {
+                "$unwind": "$type"
             }
-        }, {
-            "$lookup": {
-                "from": "types",
-                "localField": "weaknesses",
-                "foreignField": "_id",
-                "as": "weaknesses"
-            }
-        }, {
-            "$unwind": "$abilities"
-        }, {
-            "$unwind": "$weaknesses"
-        }]).to_list(1)  
+        ]).to_list(1)
+        print(pokemon)
         if len(pokemon) == 0:
             raise HTTPException(status_code=404, detail="Pokemon not found")
         return pokemon[0]
     
     async def get_all_pokemons(self, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
-        pokemons = await db.pokemons.aggregate([{
-            "$lookup": {
-                "from": "abilities",
-                "localField": "abilities",
-                "foreignField": "_id",
-                "as": "abilities"
+        pokemons = await db.pokemons.aggregate([
+            {
+                "$lookup": {
+                    "from": "abilities",
+                    "localField": "abilities",
+                    "foreignField": "_id",
+                    "as": "abilities"
+                }
+            },
+            {
+                "$unwind": "$abilities"
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "abilities.type",
+                    "foreignField": "_id",
+                    "as": "abilities.type"
+                }
+            },
+            {
+                "$unwind": "$abilities.type"
+            },
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "name": {"$first": "$name"},
+                    "type": {"$first": "$type"},
+                    "weaknesses": {"$first": "$weaknesses"},
+                    "abilities": {"$push": "$abilities"}
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "weaknesses",
+                    "foreignField": "_id",
+                    "as": "weaknesses"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "type",
+                    "foreignField": "_id",
+                    "as": "type"
+                }
+            },
+            {
+                "$unwind": "$type"
             }
-        }, {
-            "$lookup": {
-                "from": "types",
-                "localField": "weaknesses",
-                "foreignField": "_id",
-                "as": "weaknesses"
-            }
-        }, {
-            "$lookup": {
-                "from": "types",
-                "localField": "type",
-                "foreignField": "_id",
-                "as": "type"
-            }
-        }, {
-            "$unwind": "$type"
-        }]).to_list(100)
+        ]).to_list(100)
         return pokemons
 
     async def get_pokemons(self, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
@@ -76,6 +142,7 @@ class PokemonsService:
         pokemonDoc = pokemon.model_dump()
         pokemonDoc["_id"] = str(uuid.uuid4())
         result = await db.pokemons.insert_one(pokemonDoc)
+        print(result)
         
         return await self.get_pokemon_by_id(result.inserted_id, db)
 
@@ -93,6 +160,8 @@ class PokemonsService:
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Pokemon not found")
 
+    async def delete_all_pokemons(self, db: AsyncIOMotorDatabase) -> None:
+        await db.pokemons.delete_many({})
 
 
 
