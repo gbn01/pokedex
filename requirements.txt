@@ -3,3 +3,7 @@ uvicorn
 httpx
 pytest
 motor
+pytest-cov
+pytest-asyncio
+python-jose[cryptography]
+python-multipart
