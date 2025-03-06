@@ -23,3 +23,9 @@ class Ability(BaseModel):
     type: str
     category: str
     pp: int
+
+class Trainer(BaseModel):
+    id: str = Field(alias="_id")
+    name: str
+    password: str
+    pokemons: list[str]

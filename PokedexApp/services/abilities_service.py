@@ -3,40 +3,17 @@ import uuid
 from fastapi import HTTPException
 from ..dtos.abilities_dtos import *
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
+from ..utils.pipelines import get_all_abilities_pipeline, get_ability_by_id_pipeline
 
 class AbilitiesService:
 
 
     async def get_ability_by_id(self, ability_id: str, db: AsyncIOMotorDatabase) -> AbilityResponseDTO:
-        ability = await db.abilities.aggregate([{
-            "$match": {"_id": ability_id}
-        },
-        {
-            "$lookup": {
-                "from": "types",
-                "localField": "type",
-                "foreignField": "_id",
-                "as": "type"
-            }
-        },
-        {
-            "$unwind": "$type"
-        }]).to_list(length=1)
+        ability = await db.abilities.aggregate(get_ability_by_id_pipeline(ability_id)).to_list(1)
         return ability[0]
     
     async def get_all_abilities(self, db: AsyncIOMotorDatabase) -> List[AbilityResponseDTO]:
-        abilities = await db.abilities.aggregate([{
-            "$lookup": {
-                "from": "types",
-                "localField": "type",
-                "foreignField": "_id",
-                "as": "type"
-            }
-        },
-        {
-            "$unwind": "$type"
-        }]).to_list(length=100)
+        abilities = await db.abilities.aggregate(get_all_abilities_pipeline).to_list(length=100)
         return abilities
     
 

@@ -2,7 +2,9 @@
 
 from pydantic import BaseModel, Field
 
-from ..models.models import Ability, Type
+from .types_dtos import TypeResponseDTO
+
+from ..models.models import Ability
 
 
 class AbilityRegisterDto(BaseModel):
@@ -38,7 +40,11 @@ class AbilityResponseDTO(Ability):
     power: int = Field(..., description="The power of the ability")
     accuracy: int = Field(..., description="The accuracy of the ability")
     category: str = Field(..., description="The category of the ability")
-    type: Type = Field(..., description="The type of the ability")
+    type: TypeResponseDTO = Field(..., description="The type of the ability")
     pp: int = Field(..., description="The pp of the ability")
+
+    model_config = {
+        "populate_by_name": True
+    }
     
 

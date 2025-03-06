@@ -6,6 +6,10 @@ class TypeResponseDTO(BaseModel):
     id: str = Field(..., description="The id of the type", alias="_id")
     name: str = Field(..., description="The name of the type")
 
+    model_config = {
+        "populate_by_name": True
+    }
+
 
 class TypeRegisterDTO(BaseModel):
     name: str = Field(..., description="The name of the type")
