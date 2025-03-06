@@ -1,7 +1,7 @@
 from ..services.abilities_service import AbilitiesService
 from ..dtos.abilities_dtos import *
 from ..config.database import get_database
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from typing import Annotated
 router = APIRouter()

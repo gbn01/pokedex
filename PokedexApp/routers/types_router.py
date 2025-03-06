@@ -1,7 +1,5 @@
-import uuid
 from ..config.database import get_database
-from ..models.models import Type
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from ..dtos.types_dtos import *
 from ..services.types_service import TypesService

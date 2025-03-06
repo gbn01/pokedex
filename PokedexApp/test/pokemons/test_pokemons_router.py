@@ -1,6 +1,5 @@
 import pytest
-from ..mocks.mocks import mocked_create_pokemon_request, get_mocked_pokemons, get_first_mocked_pokemon, get_delete_pokemon_response, get_delete_all_pokemons_response
-from ...main import app
+from ..mocks.mocks import mocked_create_pokemon_request_json, get_mocked_pokemons, get_first_mocked_pokemon, get_delete_pokemon_response, get_delete_all_pokemons_response
 
 @pytest.mark.asyncio
 async def test_get_pokemons(test_client, fake_pokemons_service):
@@ -21,7 +20,7 @@ async def test_get_pokemon_by_id(test_client, fake_pokemons_service):
 @pytest.mark.asyncio
 async def test_create_pokemon(test_client, fake_pokemons_service):
     fake_pokemons_service.create_pokemon.return_value = get_first_mocked_pokemon()
-    response = test_client.post("/pokemons", json=mocked_create_pokemon_request)
+    response = test_client.post("/pokemons", json=mocked_create_pokemon_request_json)
     assert response.status_code == 201
     assert response.json() == get_first_mocked_pokemon()
     assert fake_pokemons_service.create_pokemon.call_count == 1
@@ -29,7 +28,7 @@ async def test_create_pokemon(test_client, fake_pokemons_service):
 @pytest.mark.asyncio
 async def test_update_pokemon(test_client, fake_pokemons_service):
     fake_pokemons_service.update_pokemon.return_value = get_first_mocked_pokemon()
-    response = test_client.put("/pokemons/1", json=mocked_create_pokemon_request)
+    response = test_client.put("/pokemons/1", json=mocked_create_pokemon_request_json)
     assert response.status_code == 200
     assert response.json() == get_first_mocked_pokemon()
     assert fake_pokemons_service.update_pokemon.call_count == 1

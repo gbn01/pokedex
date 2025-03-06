@@ -1,6 +1,5 @@
-from typing import Annotated, List
-from ..models.models import Pokemon
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+from fastapi import APIRouter
 from ..services.pokemons_service import PokemonsService
 from fastapi import Depends
 from ..config.database import get_database

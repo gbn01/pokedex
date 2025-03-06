@@ -1,133 +1,23 @@
 from typing import List
 import uuid
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from ..dtos.pokemons_dtos import PokemonRegisterDto, PokemonResponseDTO
-
-from ..models.models import Pokemon
-from ..config.database import get_database
-
+from ..utils.pipelines import get_all_pokemons_pipeline, get_pokemon_by_id_pipeline
 
 
 class PokemonsService:
 
     async def get_pokemon_by_id(self, pokemon_id: str, db: AsyncIOMotorDatabase) -> PokemonResponseDTO:
-        pokemon = await db.pokemons.aggregate([
-            {
-                "$match": {
-                    "_id": pokemon_id
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "abilities",
-                    "localField": "abilities",
-                    "foreignField": "_id",
-                    "as": "abilities"
-                }
-            },
-            {
-                "$unwind": "$abilities"
-            },
-            {
-                "$lookup": {
-                    "from": "types",
-                    "localField": "abilities.type",
-                    "foreignField": "_id",
-                    "as": "abilities.type"
-                }
-            },
-            {
-                "$unwind": "$abilities.type"
-            },
-            {
-                "$group": {
-                    "_id": "$_id",
-                    "name": {"$first": "$name"},
-                    "type": {"$first": "$type"},
-                    "weaknesses": {"$first": "$weaknesses"},
-                    "abilities": {"$push": "$abilities"}
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "types",
-                    "localField": "weaknesses",
-                    "foreignField": "_id",
-                    "as": "weaknesses"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "types",
-                    "localField": "type",
-                    "foreignField": "_id",
-                    "as": "type"
-                }
-            },
-            {
-                "$unwind": "$type"
-            }
-        ]).to_list(1)
+        pokemon = await db.pokemons.aggregate(get_pokemon_by_id_pipeline(pokemon_id)).to_list(1)
         print(pokemon)
         if len(pokemon) == 0:
             raise HTTPException(status_code=404, detail="Pokemon not found")
         return pokemon[0]
     
     async def get_all_pokemons(self, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
-        pokemons = await db.pokemons.aggregate([
-            {
-                "$lookup": {
-                    "from": "abilities",
-                    "localField": "abilities",
-                    "foreignField": "_id",
-                    "as": "abilities"
-                }
-            },
-            {
-                "$unwind": "$abilities"
-            },
-            {
-                "$lookup": {
-                    "from": "types",
-                    "localField": "abilities.type",
-                    "foreignField": "_id",
-                    "as": "abilities.type"
-                }
-            },
-            {
-                "$unwind": "$abilities.type"
-            },
-            {
-                "$group": {
-                    "_id": "$_id",
-                    "name": {"$first": "$name"},
-                    "type": {"$first": "$type"},
-                    "weaknesses": {"$first": "$weaknesses"},
-                    "abilities": {"$push": "$abilities"}
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "types",
-                    "localField": "weaknesses",
-                    "foreignField": "_id",
-                    "as": "weaknesses"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "types",
-                    "localField": "type",
-                    "foreignField": "_id",
-                    "as": "type"
-                }
-            },
-            {
-                "$unwind": "$type"
-            }
-        ]).to_list(100)
+        pokemons = await db.pokemons.aggregate(get_all_pokemons_pipeline).to_list(100)
         return pokemons
 
     async def get_pokemons(self, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
