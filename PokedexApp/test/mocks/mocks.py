@@ -3,6 +3,8 @@ from ...dtos.abilities_dtos import AbilityRegisterDto
 from ...dtos.types_dtos import TypeRegisterDTO
 from ...dtos.pokemons_dtos import PokemonRegisterDto
 
+mocked_access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFzaCBLZXRjaHVtIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
 mocked_pokemons = [
     {
         "_id": "1",
