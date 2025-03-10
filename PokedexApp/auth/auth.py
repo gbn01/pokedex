@@ -21,7 +21,7 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 @router.post("/register", response_model=TrainerResponseDTO)
 async def register(register: RegisterDTO, db: db_dependency):
-    return await register(register, db)
+    return await register_trainer(register, db)
 
 @router.post("/login", response_model=TokenDTO)
 async def login(login: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
@@ -39,7 +39,7 @@ def create_access_token(data: dict) -> str:
     encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
     return encoded_jwt
 
-async def register(register: RegisterDTO, db: AsyncIOMotorDatabase) -> TrainerResponseDTO:
+async def register_trainer(register: RegisterDTO, db: AsyncIOMotorDatabase) -> TrainerResponseDTO:
     trainer = await db.trainers.find_one({"name": register.name})
     if trainer:
         raise HTTPException(status_code=400, detail="Trainer already exists")
