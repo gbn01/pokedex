@@ -301,6 +301,66 @@ def get_trainer_by_id_pipeline(trainer_id: str):
     }
 ]
 
+def get_pokemons_by_trainer_id_pipeline(pokemons_ids: list[str]):
+    print(pokemons_ids)
+    return [
+            {
+                "$match": {
+                    "_id": {"$in": pokemons_ids}
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "abilities",
+                    "localField": "abilities",
+                    "foreignField": "_id",
+                    "as": "abilities"
+                }
+            },
+            {
+                "$unwind": "$abilities"
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "abilities.type",
+                    "foreignField": "_id",
+                    "as": "abilities.type"
+                }
+            },
+            {
+                "$unwind": "$abilities.type"
+            },
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "name": {"$first": "$name"},
+                    "type": {"$first": "$type"},
+                    "weaknesses": {"$first": "$weaknesses"},
+                    "abilities": {"$push": "$abilities"}
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "weaknesses",
+                    "foreignField": "_id",
+                    "as": "weaknesses"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "types",
+                    "localField": "type",
+                    "foreignField": "_id",
+                    "as": "type"
+                }
+            },
+            {
+                "$unwind": "$type"
+            }
+        ]
+
 get_all_pokemons_pipeline = [
             {
                 "$lookup": {

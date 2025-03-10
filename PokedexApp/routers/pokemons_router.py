@@ -18,6 +18,11 @@ async def get_pokemons(service: service_dependency, db: db_dependency, user: aut
     pokemons = await service.get_pokemons(db)
     return pokemons
 
+@router.get("/my-pokemons", response_model=list[PokemonResponseDTO])
+async def get_my_pokemons(service: service_dependency, db: db_dependency, user: auth_dependency):
+    pokemons = await service.get_my_pokemons(db, user)
+    return pokemons
+
 @router.get("/{pokemon_id}", response_model=PokemonResponseDTO)
 async def get_pokemon(pokemon_id: str, service: service_dependency, db: db_dependency, user: auth_dependency):
     pokemon = await service.get_pokemon(pokemon_id, db)

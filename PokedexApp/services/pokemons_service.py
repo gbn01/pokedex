@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from ..dtos.pokemons_dtos import PokemonRegisterDto, PokemonResponseDTO
-from ..utils.pipelines import get_all_pokemons_pipeline, get_pokemon_by_id_pipeline
+from ..utils.pipelines import get_all_pokemons_pipeline, get_pokemon_by_id_pipeline, get_pokemons_by_trainer_id_pipeline
 
 
 class PokemonsService:
@@ -19,6 +19,11 @@ class PokemonsService:
     async def get_all_pokemons(self, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
         pokemons = await db.pokemons.aggregate(get_all_pokemons_pipeline).to_list(100)
         return pokemons
+    
+    async def get_pokemons_by_trainer_id(self, trainer_id: str, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
+        trainer = await db.trainers.find_one({"_id": trainer_id})
+        pokemons = await db.pokemons.aggregate(get_pokemons_by_trainer_id_pipeline(trainer["pokemons"])).to_list(100)
+        return pokemons
 
     async def get_pokemons(self, db: AsyncIOMotorDatabase) -> List[PokemonResponseDTO]:
         return await self.get_all_pokemons(db)
@@ -26,6 +31,10 @@ class PokemonsService:
 
     async def get_pokemon(self, pokemon_id: str, db: AsyncIOMotorDatabase) -> PokemonResponseDTO:
         return await self.get_pokemon_by_id(pokemon_id, db)
+    
+    async def get_my_pokemons(self, db: AsyncIOMotorDatabase, user: dict) -> List[PokemonResponseDTO]:
+        pokemons = await self.get_pokemons_by_trainer_id(user["id"], db)
+        return pokemons
 
 
     async def create_pokemon(self, pokemon: PokemonRegisterDto, db: AsyncIOMotorDatabase) -> PokemonResponseDTO:
