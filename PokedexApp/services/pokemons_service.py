@@ -3,7 +3,7 @@ import uuid
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from ..dtos.pokemons_dtos import PokemonRegisterDto, PokemonResponseDTO
+from ..dtos.pokemons_dtos import AddToTrainerDto, PokemonRegisterDto, PokemonResponseDTO
 from ..utils.pipelines import get_all_pokemons_pipeline, get_pokemon_by_id_pipeline, get_pokemons_by_trainer_id_pipeline
 
 
@@ -35,7 +35,31 @@ class PokemonsService:
     async def get_my_pokemons(self, db: AsyncIOMotorDatabase, user: dict) -> List[PokemonResponseDTO]:
         pokemons = await self.get_pokemons_by_trainer_id(user["id"], db)
         return pokemons
-
+    
+    async def add_to_trainer(self, pokemon: AddToTrainerDto, db: AsyncIOMotorDatabase, user: dict) -> PokemonResponseDTO:
+        trainer = await db.trainers.find_one({"_id": user["id"]})
+        pokemonDoc = pokemon.model_dump()
+        pokemonDoc["name"] = pokemonDoc["name"].capitalize()
+        print(trainer["pokemons"])
+        for poke in trainer["pokemons"]:
+            poke = await db.pokemons.find_one({"_id": poke})
+            print(poke)
+            if poke["name"] == pokemonDoc["name"]:
+                raise HTTPException(status_code=400, detail="Pokemon already in trainer")
+        pokemonDoc["_id"] = str(uuid.uuid4())
+        pokemonDoc["type"] = await db.types.find_one({"name": pokemonDoc["type"]})["_id"]
+        copyAbilities = pokemonDoc["abilities"].copy()
+        pokemonDoc["abilities"] = []
+        for ability in copyAbilities:
+            abilityDoc = await db.abilities.find_one({"name": ability})
+            pokemonDoc["abilities"].append(abilityDoc["_id"])
+        copyWeaknesses = pokemonDoc["weaknesses"].copy()
+        pokemonDoc["weaknesses"] = []
+        for weakness in copyWeaknesses:
+            weaknessDoc = await db.types.find_one({"name": weakness})
+        result = await db.pokemons.insert_one(pokemonDoc)
+        await db.trainers.update_one({"_id": trainer["_id"]}, {"$push": {"pokemons": result.inserted_id}})
+        return await self.get_pokemon_by_id(result.inserted_id, db)
 
     async def create_pokemon(self, pokemon: PokemonRegisterDto, db: AsyncIOMotorDatabase) -> PokemonResponseDTO:
         pokemonDoc = pokemon.model_dump()

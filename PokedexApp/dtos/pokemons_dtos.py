@@ -35,3 +35,10 @@ class PokemonResponseDTO(Pokemon):
         },
         "populate_by_name": True,
     }
+
+
+class AddToTrainerDto(BaseModel):
+    name: str = Field(..., description="The name of the pokemon")
+    type: str = Field(..., description="The type of the pokemon")
+    abilities: list[str] = Field(..., description="The abilities of the pokemon")
+    weaknesses: list[str] = Field(..., description="The weaknesses of the pokemon")

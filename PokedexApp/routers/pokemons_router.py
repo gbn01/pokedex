@@ -28,6 +28,11 @@ async def get_pokemon(pokemon_id: str, service: service_dependency, db: db_depen
     pokemon = await service.get_pokemon(pokemon_id, db)
     return pokemon
 
+@router.post("/add-to-trainer", status_code=201, response_model=PokemonResponseDTO)
+async def add_to_trainer(pokemon: AddToTrainerDto, service: service_dependency, db: db_dependency, user: auth_dependency):
+    pokemon = await service.add_to_trainer(pokemon, db, user)
+    return pokemon
+
 @router.post("", status_code=201, response_model=PokemonResponseDTO)
 async def create_pokemon(pokemon: PokemonRegisterDto, service: service_dependency, db: db_dependency, user: auth_dependency):
     pokemon = await service.create_pokemon(pokemon, db)

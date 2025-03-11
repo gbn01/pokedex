@@ -503,3 +503,21 @@ def get_ability_by_id_pipeline(ability_id: str):
         {
             "$unwind": "$type"
         }]
+
+
+def get_abilities_by_type_pipeline(type_id: str):
+    return [
+        {
+            "$match": {"type": type_id}
+        },
+        {
+            "$lookup": {
+                "from": "types",
+                "localField": "type",
+                "foreignField": "_id",
+                "as": "type"
+            }
+        },
+        {
+            "$unwind": "$type"
+        }]

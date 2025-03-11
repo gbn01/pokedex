@@ -26,6 +26,11 @@ async def get_ability(ability_id: str, service: service_dependency, db: db_depen
     ability = await service.get_ability(ability_id, db)
     return ability
 
+@router.get("/type/{type_name}", response_model=list[AbilityResponseDTO])
+async def get_abilities_by_type(type_name: str, service: service_dependency, db: db_dependency, user: auth_dependency):
+    abilities = await service.get_abilities_by_type(type_name, db)
+    return abilities
+
 @router.put("/{ability_id}", response_model=AbilityResponseDTO)
 async def update_ability(ability_id: str, ability: AbilityRegisterDto, service: service_dependency, db: db_dependency, user: auth_dependency):
     ability = await service.update_ability(ability_id, ability, db)
