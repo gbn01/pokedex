@@ -47,7 +47,8 @@ class PokemonsService:
             if poke["name"] == pokemonDoc["name"]:
                 raise HTTPException(status_code=400, detail="Pokemon already in trainer")
         pokemonDoc["_id"] = str(uuid.uuid4())
-        pokemonDoc["type"] = await db.types.find_one({"name": pokemonDoc["type"]})["_id"]
+        type = await db.types.find_one({"name": pokemonDoc["type"]})
+        pokemonDoc["type"] = type["_id"]
         copyAbilities = pokemonDoc["abilities"].copy()
         pokemonDoc["abilities"] = []
         for ability in copyAbilities:

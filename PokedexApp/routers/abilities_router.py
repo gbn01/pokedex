@@ -21,6 +21,11 @@ async def create_ability(ability: AbilityRegisterDto, service: service_dependenc
     ability = await service.create_ability(ability, db)
     return ability
 
+# @router.get("/fill", status_code=200)
+# async def fill_abilities(service: service_dependency, db: db_dependency, user: auth_dependency):
+#     abilities = await service.fill_abilities(db)
+#     return {"message": "Abilities filled"}
+
 @router.get("/{ability_id}", response_model=AbilityResponseDTO)
 async def get_ability(ability_id: str, service: service_dependency, db: db_dependency, user: auth_dependency):
     ability = await service.get_ability(ability_id, db)
@@ -30,6 +35,8 @@ async def get_ability(ability_id: str, service: service_dependency, db: db_depen
 async def get_abilities_by_type(type_name: str, service: service_dependency, db: db_dependency, user: auth_dependency):
     abilities = await service.get_abilities_by_type(type_name, db)
     return abilities
+
+
 
 @router.put("/{ability_id}", response_model=AbilityResponseDTO)
 async def update_ability(ability_id: str, ability: AbilityRegisterDto, service: service_dependency, db: db_dependency, user: auth_dependency):
